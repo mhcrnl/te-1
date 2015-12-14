@@ -81,6 +81,7 @@ void print_file (file * f)
 	curr = f->head;
 
 	initscr();
+	cbreak();
 	while (curr != NULL) {
 		printw("%i\t%s", c++, curr->text);
 		curr = curr->next;

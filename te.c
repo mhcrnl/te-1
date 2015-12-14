@@ -8,6 +8,7 @@
 typedef struct ln {
 	char text[MAXBUFFSIZE];
 	struct ln * next;
+	struct ln * prev;
 } line;
 
 typedef struct f {
@@ -40,6 +41,7 @@ void add_line (file * f, const char * lt)
 		f->head = l;
 		f->tail = l;
 	} else {
+		l->prev = f->tail;
 		f->tail->next = l;
 		f->tail = l;
 	}
@@ -68,9 +70,9 @@ file * read_file (const char * filename)
 	return f;
 }
 
-void print_file (file * f)
+void print_file (file * f, int start, int n)
 {
-	int c = 1;
+	int i = 1;
 	line * curr;
 
 	if (f == NULL) {
@@ -80,16 +82,51 @@ void print_file (file * f)
 
 	curr = f->head;
 
-	initscr();
-	scrollok(stdscr, TRUE);
-
-	while (curr != NULL) {
-		printw("%i\t%s", c++, curr->text);
+	while (i < start) {
 		curr = curr->next;
+		i++;
 	}
 
-	refresh();
-	getch();
+	while (curr != NULL && start + n >= i) {
+		printw("%i\t%s", i++, curr->text);
+		curr = curr->next;
+	}
+}
+
+void print_lines (line * head, int n)
+{
+	int i = 1;
+	line * curr = head;
+
+	while (curr != NULL && n >= ++i) {
+		addstr(curr->text);
+		curr = curr->next;
+	}
+}
+
+void display_file (file * f)
+{
+	int rows, cols;
+	char c;
+	line * top = f->head;
+
+	initscr();
+	noecho();
+
+	getmaxyx(stdscr, rows, cols);
+	rows++;
+
+	print_lines(top, rows);
+
+	while ((c = getch()) != EOF && c != 'q') {
+		if (c == 'k' && top->prev != NULL)
+			top = top->prev;
+		else if (c == 'j' && top->next != NULL)
+			top = top->next;
+
+		clear();
+		print_lines(top, rows);
+	}
 	endwin();
 }
 
@@ -111,7 +148,7 @@ int main(int argc, char *argv[])
 	
 	f = read_file(argv[1]);
 
-	print_file(f);
+	display_file(f);
 
 	exit(EXIT_SUCCESS);
 }

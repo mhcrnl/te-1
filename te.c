@@ -123,6 +123,8 @@ void display_file (file * f)
 			top = top->prev;
 		else if (c == 'j' && top->next != NULL)
 			top = top->next;
+		else if (top->prev == NULL || top->next == NULL)
+			printf("\a\n");
 
 		clear();
 		print_lines(top, rows);

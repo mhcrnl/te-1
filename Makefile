@@ -1,7 +1,7 @@
 CSTD = c90
 
 CFLAGS = -g -W -Wall -std=$(CSTD) -pedantic
-LDFLAGS = 
+LDFLAGS = -lncurses
 
 SOURCES = $(wildcard *.c)
 OBJECTS = $(notdir $(SOURCES:.c=.o))

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ncurses.h>
 
 #define MAXBUFFSIZE 128
 
@@ -18,7 +19,7 @@ typedef struct f {
 
 file * create_file (const char * filename)
 {
-	file * f = malloc(sizeof(file *));
+	file * f = (file *) malloc(sizeof(file));
 	f->head = NULL;
 	f->tail = NULL;
 	f->lc = 0;
@@ -78,10 +79,15 @@ void print_file (file * f)
 	}
 
 	curr = f->head;
+
+	initscr();
 	while (curr != NULL) {
-		printf("%i\t%s", c++, curr->text);
+		printw("%i\t%s", c++, curr->text);
 		curr = curr->next;
 	}
+	refresh();
+	getch();
+	endwin();
 }
 
 static void print_usage (void)

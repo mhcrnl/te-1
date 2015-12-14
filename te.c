@@ -19,7 +19,7 @@ typedef struct f {
 
 file * create_file (const char * filename)
 {
-	file * f = (file *) malloc(sizeof(file));
+	file * f = malloc(sizeof(file));
 	f->head = NULL;
 	f->tail = NULL;
 	f->lc = 0;
@@ -31,7 +31,7 @@ file * create_file (const char * filename)
 
 void add_line (file * f, const char * lt)
 {
-	line * l = (line *) malloc(sizeof(line));
+	line * l = malloc(sizeof(line));
 
 	strcpy(l->text, lt);
 	l->next = NULL;
@@ -68,7 +68,7 @@ file * read_file (const char * filename)
 	return f;
 }
 
-void print_file (file * f)
+void print_file (file * f, int start, int n)
 {
 	int c = 1;
 	line * curr;
@@ -80,14 +80,48 @@ void print_file (file * f)
 
 	curr = f->head;
 
-	initscr();
-	cbreak();
-	while (curr != NULL) {
+	while (c < start) {
+		curr = curr->next;
+		c++;
+	}
+
+	while (curr != NULL && start + n >= c) {
 		printw("%i\t%s", c++, curr->text);
 		curr = curr->next;
 	}
+}
+
+void display_file (file * f)
+{
+	int top = 0;
+	int q = 0;
+
+	char c;
+
+	initscr();
+	cbreak();
+	print_file(f, top, LINES);
 	refresh();
-	getch();
+
+	while (!q) {
+		c = getch();
+		switch (c) {
+		case 'q':
+			q = 1;
+		case 'j':
+			clear();
+			refresh();
+			print_file(f, ++top, LINES);
+			refresh();
+		case 'k':
+			clear();
+			refresh();
+			print_file(f, --top, LINES);
+			refresh();
+		case 'c':
+			clear();
+		}
+	}
 	endwin();
 }
 
@@ -109,7 +143,7 @@ int main(int argc, char *argv[])
 	
 	f = read_file(argv[1]);
 
-	print_file(f);
+	display_file(f);
 
 	exit(EXIT_SUCCESS);
 }

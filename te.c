@@ -68,7 +68,7 @@ file * read_file (const char * filename)
 	return f;
 }
 
-void print_file (file * f, int start, int n)
+void print_file (file * f)
 {
 	int c = 1;
 	line * curr;
@@ -80,48 +80,16 @@ void print_file (file * f, int start, int n)
 
 	curr = f->head;
 
-	while (c < start) {
-		curr = curr->next;
-		c++;
-	}
+	initscr();
+	scrollok(stdscr, TRUE);
 
-	while (curr != NULL && start + n >= c) {
+	while (curr != NULL) {
 		printw("%i\t%s", c++, curr->text);
 		curr = curr->next;
 	}
-}
 
-void display_file (file * f)
-{
-	int top = 0;
-	int q = 0;
-
-	char c;
-
-	initscr();
-	cbreak();
-	print_file(f, top, LINES);
 	refresh();
-
-	while (!q) {
-		c = getch();
-		switch (c) {
-		case 'q':
-			q = 1;
-		case 'j':
-			clear();
-			refresh();
-			print_file(f, ++top, LINES);
-			refresh();
-		case 'k':
-			clear();
-			refresh();
-			print_file(f, --top, LINES);
-			refresh();
-		case 'c':
-			clear();
-		}
-	}
+	getch();
 	endwin();
 }
 
@@ -143,7 +111,7 @@ int main(int argc, char *argv[])
 	
 	f = read_file(argv[1]);
 
-	display_file(f);
+	print_file(f);
 
 	exit(EXIT_SUCCESS);
 }

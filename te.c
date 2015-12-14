@@ -52,19 +52,17 @@ file * read_file (const char * filename)
 	char buffer[MAXBUFFSIZE];
 	file * f = create_file(filename);
 
-	puts("File created");
-
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
 		fprintf(stderr, "Failed to open %s\n", filename);
 		return NULL;
 	}
 
-	puts("File opened");
-
 	while (fgets(buffer, MAXBUFFSIZE, fp)) {
 		add_line(f, buffer);
 	}
+
+	fclose(fp);
 
 	return f;
 }
@@ -86,14 +84,25 @@ void print_file (file * f)
 	}
 }
 
+static void print_usage (void)
+{
+	printf("te: Text editor\n");
+	printf("Usage:\n");
+	printf("\tte filename\n");
+}
+
 int main(int argc, char *argv[])
 {
-	file * f = read_file(argv[1]);
-	puts("File read");
+	file * f;
+	
+	if (argc != 2) {
+		print_usage();
+		exit(EXIT_SUCCESS);
+	}
+	
+	f = read_file(argv[1]);
 
-	printf("%i\n", f->lc);
 	print_file(f);
-
 
 	exit(EXIT_SUCCESS);
 }

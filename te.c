@@ -165,8 +165,6 @@ int main(int argc, char *argv[])
 	f = read_file(argv[1]);
 	
 	win = init_disp(f);
-	getmaxyx(win, rows, cols);
-	printf("%i\n", rows);
 
 	main_loop(win, f);
 

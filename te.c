@@ -81,37 +81,7 @@ void print_lines (WINDOW * lwin, line * head, int n)
 	}
 
 	wrefresh(lwin);
-	printf("%i\n", n);
 }
-
-/*
-void display_file (file * f)
-{
-	int rows, cols;
-	char c;
-	line * top = f->head;
-
-	initscr();
-	noecho();
-
-	getmaxyx(stdscr, rows, cols);
-
-	print_lines(top, rows);
-
-	while ((c = getch()) != EOF && c != 'q') {
-		if (c == 'k' && top->prev != NULL)
-			top = top->prev;
-		else if (c == 'j' && top->next != NULL)
-			top = top->next;
-		else if (top->prev == NULL || top->next == NULL)
-			printf("\a\n");
-
-		clear();
-		print_lines(top, rows);
-	}
-	endwin();
-}
-*/
 
 WINDOW * init_disp (file * f)
 {

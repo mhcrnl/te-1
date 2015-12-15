@@ -3,10 +3,10 @@
 #include <string.h>
 #include <ncurses.h>
 
-#define MAXBUFFSIZE 128
+#define BUFFSIZE 509
 
 typedef struct ln {
-	char text[MAXBUFFSIZE];
+	char text[BUFFSIZE];
 	struct ln * next;
 	struct ln * prev;
 } line;
@@ -15,7 +15,7 @@ typedef struct f {
 	line * head;
 	line * tail;
 	int lc;
-	char filename[128];
+	char filename[BUFFSIZE];
 } file;
 
 file * create_file (const char * filename)
@@ -52,7 +52,7 @@ void add_line (file * f, const char * lt)
 file * read_file (const char * filename)
 {
 	FILE *fp;
-	char buffer[MAXBUFFSIZE];
+	char buffer[BUFFSIZE];
 	file * f = create_file(filename);
 
 	fp = fopen(filename, "r");
@@ -61,7 +61,7 @@ file * read_file (const char * filename)
 		return NULL;
 	}
 
-	while (fgets(buffer, MAXBUFFSIZE, fp)) {
+	while (fgets(buffer, BUFFSIZE, fp)) {
 		add_line(f, buffer);
 	}
 
@@ -70,40 +70,21 @@ file * read_file (const char * filename)
 	return f;
 }
 
-void print_file (file * f, int start, int n)
-{
-	int i = 1;
-	line * curr;
-
-	if (f == NULL) {
-	       fprintf(stderr, "Can't print null file\n");	       
-	       return;
-	}
-
-	curr = f->head;
-
-	while (i < start) {
-		curr = curr->next;
-		i++;
-	}
-
-	while (curr != NULL && start + n >= i) {
-		printw("%i\t%s", i++, curr->text);
-		curr = curr->next;
-	}
-}
-
-void print_lines (line * head, int n)
+void print_lines (WINDOW * lwin, line * head, int n)
 {
 	int i = 1;
 	line * curr = head;
 
 	while (curr != NULL && n >= ++i) {
-		addstr(curr->text);
+		wprintw(lwin, "%s", curr->text);
 		curr = curr->next;
 	}
+
+	wrefresh(lwin);
+	printf("%i\n", n);
 }
 
+/*
 void display_file (file * f)
 {
 	int rows, cols;
@@ -114,7 +95,6 @@ void display_file (file * f)
 	noecho();
 
 	getmaxyx(stdscr, rows, cols);
-	rows++;
 
 	print_lines(top, rows);
 
@@ -131,6 +111,68 @@ void display_file (file * f)
 	}
 	endwin();
 }
+*/
+
+WINDOW * init_disp (file * f)
+{
+	WINDOW * win;
+	int rows, cols;
+
+	initscr();
+	noecho();
+	refresh();
+
+	getmaxyx(stdscr, rows, cols);
+	win = newwin(rows, cols, 0, 0);
+
+	print_lines(win, f->head, rows);
+
+	return win;
+}
+
+void no_scroll (void)
+{
+	printf("\a\n");
+}
+
+line * scrollw (WINDOW * win, line * top, int up)
+{
+	int rows, cols;
+	if (up && top->prev != NULL)
+		top = top->prev;
+	else if (!up && top->next != NULL)
+		top = top->next;
+	else
+		no_scroll();
+
+	getmaxyx(win, rows, cols);
+	wclear(win);
+	print_lines(win, top, rows);
+
+	return top;
+}
+
+void main_loop (WINDOW * win, file * f)
+{
+	int q = 0;
+	line * top = f->head;
+	while (!q) {
+		switch (getch()) {
+		case EOF:
+			q = 1;
+			break;
+		case 'q':
+			q = 1;
+			break;
+		case 'k':
+			top = scrollw(win, top, 1);
+			break;
+		case 'j':
+			top = scrollw(win, top, 0);
+			break;
+		}
+	}
+}
 
 static void print_usage (void)
 {
@@ -142,6 +184,8 @@ static void print_usage (void)
 int main(int argc, char *argv[])
 {
 	file * f;
+	WINDOW * win;
+	int rows, cols;
 	
 	if (argc != 2) {
 		print_usage();
@@ -149,8 +193,14 @@ int main(int argc, char *argv[])
 	}
 	
 	f = read_file(argv[1]);
+	
+	win = init_disp(f);
+	getmaxyx(win, rows, cols);
+	printf("%i\n", rows);
 
-	display_file(f);
+	main_loop(win, f);
+
+	endwin();
 
 	exit(EXIT_SUCCESS);
 }

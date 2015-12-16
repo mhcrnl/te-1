@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <ncurses.h>
+#include <libguile.h>
 
 #define BUFFSIZE 509
 
@@ -155,7 +157,6 @@ int main(int argc, char *argv[])
 {
 	file * f;
 	WINDOW * win;
-	int rows, cols;
 	
 	if (argc != 2) {
 		print_usage();
@@ -165,6 +166,9 @@ int main(int argc, char *argv[])
 	f = read_file(argv[1]);
 	
 	win = init_disp(f);
+
+	curs_set(2);
+	wmove(win, 10, 10);
 
 	main_loop(win, f);
 

@@ -1,7 +1,7 @@
 CSTD = c90
 
-CFLAGS = -g -W -Wall -std=$(CSTD) -pedantic
-LDFLAGS = -lncurses
+CFLAGS = -g -W -Wall -std=$(CSTD) -pedantic $(shell pkg-config guile-2.0 --cflags)
+LDFLAGS = -lncurses $(shell pkg-config guile-2.0 --libs)
 
 SOURCES = $(wildcard *.c)
 OBJECTS = $(notdir $(SOURCES:.c=.o))
